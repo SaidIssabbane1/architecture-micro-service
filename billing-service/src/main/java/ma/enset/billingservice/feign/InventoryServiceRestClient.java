@@ -1,5 +1,6 @@
 package ma.enset.billingservice.feign;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import ma.enset.billingservice.model.Product;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,5 +10,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface InventoryServiceRestClient {
 
     @GetMapping("/products/{id}")
+    @CircuitBreaker(name = "inventory-service", fallbackMethod = "getDefaultProduct")
     Product getProduct(@PathVariable Long id);
+
+    default Product getDefaultProduct(Long id, Exception e){
+        e.printStackTrace();
+        return new Product(id,null,0.0,0);
+    };
 }
